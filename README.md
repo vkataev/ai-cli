@@ -1,18 +1,30 @@
 # ai-cli
-command line assistant smoothly connecting your requests with LLM of your choice and executing directly returned actions, all in a single C file
+command line tool connecting your requests in natural language with LLM of your choice and executing directly returned actions, implemented as a single portable C file
 
 ## MOTIVATION
 
-Free yourself from writing all those complex actions in command line shell, instead ai assistant will do it for you based on your requests.
+I was thinking how to automate my daily routine like shell commands and instead to switch completely to natural language.
 
-Your choices are: **accept** actions (by just pressing **Enter**) with opportunity to **edit** assistan's answer first or **reject** actions by pressing **Ctrl+C**.
+Often I switch from terminal shell to external or local LLM chatbot to ask it sometimes about like "how to convert all file names to lower case, a one line in python or shell".
+
+What if I make a small tool which will send my requests in natural language to a local LLM and receive replies which are executable by just pressing Enter on my side?
+
+I decided to make a tiny LLM harness in a highly portable way - no any external dependency, a single C source, so it can directly run on any remote or local machine.
+
+So, how should it work? It's obvious I need to send some information about user's environment to LLM, e.g. cli tools available, OS, current directory path, etc.
+
+This way, LLM generates much better replies.
+
+And since I am lazy to type double quotes, let's assume all text after ai command itself is my request, like: ai what time is it
+
+And it works! Additional check is given to user to edit LLM's reply, reject it, or accept it - and it will trigger execution.
+
+User's choices are: **accept** actions (by just pressing **Enter**) with opportunity to **edit** assistan's answer first or **reject** actions by pressing **Ctrl+C**.
 
 ## EXAMPLES
 
-If for example, you want to know who did run jobs on a particular Slurm node, you may ask:
-
 ```bash
-$ ./ai who was running jobs on a slurm node 39 between 1 and 2 hours ago
+$ ai who was running jobs on a slurm node 39 between 1 and 2 hours ago
 user847
 uset20499
 ```
@@ -25,37 +37,37 @@ sacct --format="JobID,JobName,User,NodeList,Start,End,State" --allusers --startt
 Other examples:
 
 ```bash
-$ ./ai replace Solar with solar in every python file in this folder
+$ ai replace Solar with solar in every python file in this folder
 Done
 
-$ ./ai modify permissions of this folder so no other user can read anything here
+$ ai modify permissions of this folder so no other user can read anything here
 Done
 
-$ ./ai find all occurances of subword "perform" in words.txt and print their line numbers
+$ ai find all occurances of subword "perform" in words.txt and print their line numbers
 1881
 10046
 10047
 40358
 
-$ ./ai math log of 4096
+$ ai math log of 4096
 8.317766166719343
 
-$ ./ai show me last 3 lines in each c file in current folder
+$ ai show me last 3 lines in each c file in current folder
     buffer_free(&original);
     return exit_code;
 }
 
-$ ./ai what is IP address of somewebsite
+$ ai what is IP address of somewebsite
 xxx.xx.xx.xxx
 ```
 
 ## WARNING
 
-Be careful, because this tool executes actions returned by LLM directly in your shell.
+This tool executes actions returned by LLM directly in your shell.
 
 Authors are not responsible for any damage this program can cause.
 
-If you are not familiar with shell commands, do not use this assistant.
+If you are not familiar with shell commands, do not use this tool.
 
 ## BUILD
 
@@ -79,33 +91,7 @@ sh run.build_ai.sh
 
 ## PORTABILITY
 
-You can build and run this tool on literally any platform, fully supported:
-
-- Linux
-- macOS
-- Android
-- FreeBSD
-- iOS
-- OpenBSD
-- NetBSD
-- QNX Neutrino
-- Windows (MSYS2 or Cygwin)
-- WebOS
-- Haiku
-- SerenityOS
-- DragonFly BSD
-- illumos
-- Solaris
-- AIX
-- HP-UX
-- Tru64 UNIX
-- IRIX
-- UnixWare
-- SCO OpenServer
-- Redox OS
-- VxWorks
-- RTEMS
-- INTEGRITY
+You can build and run this tool on literally any platform, including: Linux, macOS, Android, FreeBSD, iOS, OpenBSD, NetBSD, QNX Neutrino, Windows (MSYS2 or Cygwin), WebOS, Haiku etc.
 
 Most LLM engines are fully supported:
 
@@ -129,7 +115,7 @@ Most LLM engines are fully supported:
 
 ## DEPENDENCIES
 
-You need an LLM engine running locally or remotely.
+You need an access to LLM engine running locally or remotely.
 
 Example how you may run llama.cpp with Gemma-4 model:
 
