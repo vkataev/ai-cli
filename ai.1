@@ -1,0 +1,38 @@
+.\" Manpage for AI.
+.TH AI 1 "15 July 2026" "1.0" "AI User Manual"
+.SH NAME
+ai \- command line assistant
+.SH SYNOPSIS
+ai [--memory] REQUEST
+.SH DESCRIPTION
+\fBai\fR sends your request to LLM and receives executable shell actions
+
+your choices are: \fBaccept\fR actions (by just pressing \fBEnter\fR) with opportunity to \fBedit\fR assistan's answer first or \fBreject\fR actions by pressing \fBCtrl+C\fR
+.SH OPTIONS
+.RS 4
+.PP
+\fB\-\-memory\fR enables asistant's memory, it will update file \fBAI_MEMORY.md\fR in a current directory, so it remembers all previous requests and actions including rejected
+.RE
+.SH EXAMPLES
+\fBai\fR replace Solar with solar in every python file in this folder
+
+\fBai\fR find all occurances of subword "perform" in words.txt and print their line numbers
+
+\fBai\fR who was running jobs on a slurm node 39 between 3 and 4 hours ago
+.SH SETUP
+You have to set environment variable AI_URL, which should be URL of your LLM server:
+
+export AI_URL="http://127.0.0.1:8001"
+
+.SH AUTHOR
+Vadim Kataev (github.com/vkataev)
+.SH COPYRIGHT
+Copyright (c) 2026 Vadim Kataev
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
