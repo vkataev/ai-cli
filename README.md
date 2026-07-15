@@ -67,7 +67,7 @@ and **disable thinking mode** - answers model provides will be direct shell acti
 
 ## Usage examples
 
-```bash
+```
 $ ai who was running jobs on a slurm node 39 between 1 and 2 hours ago
 user847
 uset20499
@@ -76,7 +76,7 @@ The action assitant returned might look like: sacct --format="JobID,JobName,User
 
 Thus, you are really happy to not remembering and entering this mess manually
 
-```bash
+```
 $ ai replace Solar with solar in every python file in this folder
 Done
 
