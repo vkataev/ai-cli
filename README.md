@@ -1,48 +1,10 @@
-<img width="1314" height="838" alt="2026-07-15-ai-cli" src="https://github.com/user-attachments/assets/9fe07007-5d0c-442b-a118-676d51b9a5de" />
+## Principles
 
-```
-$ ai show distribution of weights in v_proj0 in file mymodel.safetensors as textual multiline histogram, use 4 bins, range from -.6 to +.6
-xxxx     -.6 .. -.3
-xxxxxxx  -.3 .. 0.
-xxxxx     0. .. +.3
-xxx      +.3 .. +.6
-
-$ ai convert all float16 .gguf models in this folder into 4-bit, use slurm_submit.sh script for that
-Found 2 files, submitted job IDs: 34289128, 34289129
-```
-
-```
-$ ai --memory what operating system do I have
-MINGW64_NT-11.0-12345
-
-$ ai --memory but it says MINGW...bla bla, I dont know such OS
-You are running Windows, but you are using the MINGW64 environment (a common way to run Linux-like tools on Windows).
-
-$ ai --memory I see, so install ffmpeg
-Done, ffmpeg package was installed using pacman
-```
-
-
-## Motivation
-
-I was thinking how to automate my daily routine like shell commands and instead to switch completely to natural language.
-
-Often I switch from terminal shell to external or local LLM chatbot to ask it sometimes about like "how to convert all file names to lower case, a one line in python or shell".
-
-What if I make a small tool which will send my requests in natural language to a local LLM and receive replies which are executable by just pressing Enter on my side?
-
-I decided to make a tiny LLM harness in a highly portable way - no any external dependency, a single C source, so it can directly run on any remote or local machine.
-
-So, how should it work? It's obvious I need to send some information about user's environment to LLM, e.g. cli tools available, OS, current directory path, etc.
-
-This way, LLM generates much better replies.
-
-And since I am lazy to type double quotes, let's assume all text after ai command itself is my request, like: ai what time is it
-
-And it works! Additional check is given to user to edit LLM's reply, reject it, or accept it - and it will trigger execution.
-
-User's choices are: **accept** actions (by just pressing **Enter**) with opportunity to **edit** assistan's answer first or **reject** actions by pressing **Ctrl+C**.
-
+- single C file
+- no dependencies
+- unix philosophy: natural language → shell action → execute
+- backend agnostic: uses /v1/chat/completions, works with all local LLM servers
+- interactive safety model: review/edit generated command before execution
 
 ## Usage
 
@@ -52,63 +14,45 @@ ai [--memory] your request in plain human language
 
 You write your direct request just in natural text. You may refer to any file names, system tools, and essentially to anything.
 
-Then an interactive edit mode will be opened and you have full overview on what LLM has returned.
+As LLM is replying you are in interactive edit mode having full overview on what LLM returns.
 
-You can accept LLM's answer by pressing **Enter** and actions will be executed in shell or you can press **Ctrl+C** to reject entire actions.
+To accept LLM's answer press **Enter** - answer will be executed in your shell.
+
+To reject LLM's answer press **Ctrl+C** - nothing will be executed.
 
 You can edit returned answer just like in any editor - use arrow keys to navigate.
 
-To execute actions place cursor to the end of the entire answer and press Enter or reject at any time by pressing Ctrl+C.
+To execute edited answer place cursor to the end of the entire answer and press Enter or reject at any time by pressing Ctrl+C.
 
 You can choose any LLM service by setting AI_URL environment variable:
 
 ```bash
 $ export AI_URL="http://127.0.0.1:8001"
 ```
-
-### Enabling memory
-
-You can enable assistant's memory with **--memory** flag, in this case it will update AI_MEMORY.md in the current directory.
-This helps solving more complex tasks, assistant will remember all previous actions including rejected.
+Enable assistant's memory with **--memory** flag, so it will keep history in AI_MEMORY.md in the current directory - assistant will remember all previous requests and actions including rejected.
 
 
-## Build
+## Build & Install
 
 ```bash
 gcc ai.c -o ai
-```
 
-## Install
-Copy ai file into your ~/.local/bin and a man page into ~/.local/share/man/man1/ :
-```
-sh run.build_ai.sh
+sh run.install_ai.sh
+#OR cp ./ai ~/.local/bin && cp ./ai.1 ~/.local/share/man/man1/ && export PATH=$PATH:~/.local/bin
 ```
 
 ## Portability
 
-You can build and run this tool on literally any platform, including: Linux, macOS, Android, FreeBSD, iOS, OpenBSD, NetBSD, QNX Neutrino, Windows (MSYS2 or Cygwin), WebOS, Haiku etc.
+It will fly on any platform: Linux, macOS, Android, FreeBSD, iOS, OpenBSD, NetBSD, QNX Neutrino, Windows (MSYS2 or Cygwin), WebOS, Haiku etc.
 
-Most LLM engines are fully supported:
+Most LLM engines are fully supported: llama.cpp, vLLM, TensorRT-LLM, Ollama, LM Studio, etc.
 
-| Engine                          | `/v1/chat/completions` |
-| ------------------------------- | ---------------------- |
-| llama.cpp                       | Yes                    |
-| vLLM                            | Yes                    |
-| TensorRT-LLM                    | Yes                    |
-| Ollama                          | Yes                    |
-| LM Studio                       | Yes                    |
-| SGLang                          | Yes                    |
-| Text Generation Inference (TGI) | Yes                    |
-| Aphrodite Engine                | Yes                    |
-| LocalAI                         | Yes                    |
-| Xinference                      | Yes                    |
-| FastChat                        | Yes                    |
-| MLC LLM                         | Yes                    |
-| KoboldCpp                       | Partial                |
+You only need set AI_URL pointing to your LLM server:
+```bash
+$ export AI_URL="http://127.0.0.1:8001"
+```
 
-You only need an access to LLM engine running locally or remotely.
-
-Example how you may run llama.cpp with Gemma-4 model:
+Example how to run llama.cpp server with Gemma-4 model:
 
 ```bash
 llama-server  --host 0.0.0.0 \
@@ -119,22 +63,18 @@ llama-server  --host 0.0.0.0 \
     --port 8001 \
     --chat-template-kwargs '{"enable_thinking":false}'
 ```
-Remember to **disable thinking mode** - answers model provides will be direct shell actions.
+and **disable thinking mode** - answers model provides will be direct shell actions.
 
-## More examples
+## Usage examples
 
 ```bash
 $ ai who was running jobs on a slurm node 39 between 1 and 2 hours ago
 user847
 uset20499
 ```
-The action assitant returned might look like:
+The action assitant returned might look like: sacct --format="JobID,JobName,User,NodeList,Start,End,State" --allusers --starttime=$(date -d "-2 hours" "+%Y-%m-%dT%H:%M:%S") --endtime=$(date -d "-1 hours" "+%Y-%m-%dT%H:%M:%S") --allocations --node=39 | tail -n +3 | awk '{print $3}' | sort | uniq
 
-```bash
-sacct --format="JobID,JobName,User,NodeList,Start,End,State" --allusers --starttime=$(date -d "-2 hours" "+%Y-%m-%dT%H:%M:%S") --endtime=$(date -d "-1 hours" "+%Y-%m-%dT%H:%M:%S") --allocations --node=39 | tail -n +3 | awk '{print $3}' | sort | uniq
-```
-
-Other examples:
+Thus, you are really happy to not remembering and entering this mess manually
 
 ```bash
 $ ai replace Solar with solar in every python file in this folder
@@ -159,9 +99,47 @@ $ ai show me last 3 lines in each c file in current folder
 
 $ ai what is IP address of somewebsite
 xxx.xx.xx.xxx
+
+$ ai show distrib of v_0 in m.safetensors as txt histogram,4 bins,range -.6 to +.6
+xxxx     -.6 .. -.3
+xxxxxxx  -.3 .. 0.
+xxxxx     0. .. +.3
+xxx      +.3 .. +.6
+
+$ ai convert all float16 .gguf models in cur folder into 4-bit, use slurm_submit.sh
+Found 2 files, submitted job IDs: 34289128, 34289129
+
+$ ai --memory what operating system do I have
+MINGW64_NT-11.0-12345
+
+$ ai --memory but it says MINGW...bla bla, I dont know such OS
+You are running Windows, but you are using the MINGW64 environment (Linux-like tools on Win).
+
+$ ai --memory I see, so install ffmpeg
+Done, ffmpeg package was installed using pacman
 ```
 
-## WARNING
+## Motivation
+
+I was thinking how to automate my daily routine like shell commands and instead to switch completely to natural language.
+
+Often I switch from terminal shell to external or local LLM chatbot to ask it sometimes about like "how to convert all file names to lower case, a one line in python or shell".
+
+What if I make a small tool which will send my requests in natural language to a local LLM and receive replies which are executable by just pressing Enter on my side?
+
+I decided to make a tiny LLM harness in a highly portable way - no any external dependency, a single C source, so it can directly run on any remote or local machine.
+
+So, how should it work? It's obvious I need to send some information about user's environment to LLM, e.g. cli tools available, OS, current directory path, etc.
+
+This way, LLM generates much better replies.
+
+And since I am lazy to type double quotes, let's assume all text after ai command itself is my request, like: ai what time is it
+
+And it works! Additional check is given to user to edit LLM's reply, reject it, or accept it - and it will trigger execution.
+
+User's choices are: **accept** actions (by just pressing **Enter**) with opportunity to **edit** assistan's answer first or **reject** actions by pressing **Ctrl+C**.
+
+## Safety
 
 This tool executes actions returned by LLM directly in your shell.
 
