@@ -1,3 +1,4 @@
+<img width="1314" height="838" alt="2026-07-15-ai-cli" src="https://github.com/user-attachments/assets/9fe07007-5d0c-442b-a118-676d51b9a5de" />
 
 ```
 $ ai show distribution of weights in v_proj0 in file mymodel.safetensors as textual multiline histogram, use 4 bins, range from -.6 to +.6
