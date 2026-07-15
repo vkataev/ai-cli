@@ -1,7 +1,28 @@
-# ai-cli
-command line tool connecting your requests in natural language with LLM of your choice and executing directly returned actions, implemented as a single portable C file
 
-## MOTIVATION
+```
+$ ai show distribution of weights in v_proj0 in file mymodel.safetensors as textual multiline histogram, use 4 bins, range from -.6 to +.6
+xxxx     -.6 .. -.3
+xxxxxxx  -.3 .. 0.
+xxxxx     0. .. +.3
+xxx      +.3 .. +.6
+
+$ ai convert all float16 .gguf models in this folder into 4-bit, use slurm_submit.sh script for that
+Found 2 files, submitted job IDs: 34289128, 34289129
+```
+
+```
+$ ai --memory what operating system do I have
+MINGW64_NT-11.0-12345
+
+$ ai --memory but it says MINGW...bla bla, I dont know such OS
+You are running Windows, but you are using the MINGW64 environment (a common way to run Linux-like tools on Windows).
+
+$ ai --memory I see, so install ffmpeg
+Done, ffmpeg package was installed using pacman
+```
+
+
+## Motivation
 
 I was thinking how to automate my daily routine like shell commands and instead to switch completely to natural language.
 
@@ -21,7 +42,85 @@ And it works! Additional check is given to user to edit LLM's reply, reject it, 
 
 User's choices are: **accept** actions (by just pressing **Enter**) with opportunity to **edit** assistan's answer first or **reject** actions by pressing **Ctrl+C**.
 
-## EXAMPLES
+
+## Usage
+
+```
+ai [--memory] your request in plain human language
+```
+
+You write your direct request just in natural text. You may refer to any file names, system tools, and essentially to anything.
+
+Then an interactive edit mode will be opened and you have full overview on what LLM has returned.
+
+You can accept LLM's answer by pressing **Enter** and actions will be executed in shell or you can press **Ctrl+C** to reject entire actions.
+
+You can edit returned answer just like in any editor - use arrow keys to navigate.
+
+To execute actions place cursor to the end of the entire answer and press Enter or reject at any time by pressing Ctrl+C.
+
+You can choose any LLM service by setting AI_URL environment variable:
+
+```bash
+$ export AI_URL="http://127.0.0.1:8001"
+```
+
+### Enabling memory
+
+You can enable assistant's memory with **--memory** flag, in this case it will update AI_MEMORY.md in the current directory.
+This helps solving more complex tasks, assistant will remember all previous actions including rejected.
+
+
+## Build
+
+```bash
+gcc ai.c -o ai
+```
+
+## Install
+Copy ai file into your ~/.local/bin and a man page into ~/.local/share/man/man1/ :
+```
+sh run.build_ai.sh
+```
+
+## Portability
+
+You can build and run this tool on literally any platform, including: Linux, macOS, Android, FreeBSD, iOS, OpenBSD, NetBSD, QNX Neutrino, Windows (MSYS2 or Cygwin), WebOS, Haiku etc.
+
+Most LLM engines are fully supported:
+
+| Engine                          | `/v1/chat/completions` |
+| ------------------------------- | ---------------------- |
+| llama.cpp                       | Yes                    |
+| vLLM                            | Yes                    |
+| TensorRT-LLM                    | Yes                    |
+| Ollama                          | Yes                    |
+| LM Studio                       | Yes                    |
+| SGLang                          | Yes                    |
+| Text Generation Inference (TGI) | Yes                    |
+| Aphrodite Engine                | Yes                    |
+| LocalAI                         | Yes                    |
+| Xinference                      | Yes                    |
+| FastChat                        | Yes                    |
+| MLC LLM                         | Yes                    |
+| KoboldCpp                       | Partial                |
+
+You only need an access to LLM engine running locally or remotely.
+
+Example how you may run llama.cpp with Gemma-4 model:
+
+```bash
+llama-server  --host 0.0.0.0 \
+    --model unsloth/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf \
+    --temp 1.0 \
+    --top-p 0.95 \
+    --top-k 64 \
+    --port 8001 \
+    --chat-template-kwargs '{"enable_thinking":false}'
+```
+Remember to **disable thinking mode** - answers model provides will be direct shell actions.
+
+## More examples
 
 ```bash
 $ ai who was running jobs on a slurm node 39 between 1 and 2 hours ago
@@ -68,94 +167,4 @@ This tool executes actions returned by LLM directly in your shell.
 Authors are not responsible for any damage this program can cause.
 
 If you are not familiar with shell commands, do not use this tool.
-
-## BUILD
-
-```bash
-sh run.build_ai.sh
-```
-
-or directly
-
-```bash
-gcc ai.c -o ai
-```
-
-## INSTALL
-This will copy ai into your ~/.local/bin and man page into ~/.local/share/man/man1/
-
-```bash
-sh run.build_ai.sh
-```
-
-
-## PORTABILITY
-
-You can build and run this tool on literally any platform, including: Linux, macOS, Android, FreeBSD, iOS, OpenBSD, NetBSD, QNX Neutrino, Windows (MSYS2 or Cygwin), WebOS, Haiku etc.
-
-Most LLM engines are fully supported:
-
-| Engine                          | `/v1/chat/completions` |
-| ------------------------------- | ---------------------- |
-| llama.cpp                       | Yes                    |
-| vLLM                            | Yes                    |
-| TensorRT-LLM                    | Yes                    |
-| Ollama                          | Yes                    |
-| LM Studio                       | Yes                    |
-| SGLang                          | Yes                    |
-| Text Generation Inference (TGI) | Yes                    |
-| Aphrodite Engine                | Yes                    |
-| LocalAI                         | Yes                    |
-| Xinference                      | Yes                    |
-| FastChat                        | Yes                    |
-| MLC LLM                         | Yes                    |
-| KoboldCpp                       | Partial                |
-
-
-
-## DEPENDENCIES
-
-You need an access to LLM engine running locally or remotely.
-
-Example how you may run llama.cpp with Gemma-4 model:
-
-```bash
-llama-server  --host 0.0.0.0 \
-    --model unsloth/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf \
-    --temp 1.0 \
-    --top-p 0.95 \
-    --top-k 64 \
-    --port 8001 \
-    --chat-template-kwargs '{"enable_thinking":false}'
-```
-Remember to disable thinking mode - answers model provides will be direct shell actions.
-
-
-## USAGE
-
-```bash
-$ export AI_URL="http://127.0.0.1:8001"
-$ ./ai which file in this folder is to build ai tool
-./run.build_ai.sh
-```
-
-You can accept answer by pressing **Enter** and actions will be executed in shell or you can press **Ctrl+C** to reject entire actions.
-
-You can edit returned answer just like in any editor - use arrow keys to navigate.
-
-To execute actions place cursor to the end of the entire answer and press Enter or reject at any time by pressing Ctrl+C.
-
-## MEMORY USAGE
-
-You can enable assistant's memory with **--memory** flag, in this case it will update AI_MEMORY.md in the current directory.
-This helps solving more complex tasks, assistant will remember all previous actions including rejected.
-
-```bash
-$ ./ai --memory what operating system do I have
-MINGW64_NT-11.0-12345
-
-$ ./ai --memory but it says MINGW...bla bla, I dont know such OS
-You are running Windows, but you are using the MINGW64 environment (a common way to run Linux-like tools on Windows).
-```
-
 
